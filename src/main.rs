@@ -22,11 +22,9 @@ fn process_command(stdin: &mut Stdin, cnt: u32) {
 	println!("try: {}", cnt);
 
 	match cmd.spawn() {
-		Ok(_) => {},
+		Ok(mut c) => println!("exited: {}", c.wait().is_ok()),
 		Err(m) => println!("trash: {}", m)
 	}
-
-	println!("exited: {}", cmd.status().is_ok());
 
 }
 
