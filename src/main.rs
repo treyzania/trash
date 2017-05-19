@@ -1,10 +1,10 @@
 use std::io;
 use std::io::*;
-//use std::env;
+use std::env;
 use std::string::String;
 use std::process::*;
 
-fn process_command(stdin: &mut Stdin, cnt: u32) {
+fn process_command(stdin: &mut Stdin) {
 
 	let mut buf = String::new();
 	stdin.read_line(&mut buf).expect("error reading args");
@@ -19,8 +19,6 @@ fn process_command(stdin: &mut Stdin, cnt: u32) {
 	cmd.stdin(Stdio::inherit());
 	cmd.stdout(Stdio::inherit());
 
-	println!("try: {}", cnt);
-
 	match cmd.spawn() {
 		Ok(mut c) => println!("exited: {}", c.wait().is_ok()),
 		Err(m) => println!("trash: {}", m)
@@ -33,18 +31,13 @@ fn main() {
 	let mut stdin = io::stdin();
 	let mut stdout = io::stdout();
 
-	let mut iters = 0;
-
 	loop {
 
-		let prompt = "$ ";
-
-		/*match env::var_os("PS1") {
-			Some(v) => {
-				prompt = v.to_str().unwrap();
-			},
-			None => {} // Already okay.
-		};*/
+		let prompt =
+			match env::var_os("PS1") {
+				Some(v) => v.into_string().unwrap(),
+				None => String::from("$ "),
+			};
 
 		// Write the promt and then process the command.
 		match stdout.write(&String::from(prompt).as_bytes()) {
@@ -52,13 +45,9 @@ fn main() {
 			Err(_) => {}
 		};
 
-		match stdout.flush() {
-			Ok(_) => {}
-			Err(_) => panic!("could not flush stdout for prompt!")
-		};
+		stdout.flush().expect("couldn't flush stdout");
 
-		process_command(&mut stdin, iters);
-		iters += 1;
+		process_command(&mut stdin);
 
 	}
 
